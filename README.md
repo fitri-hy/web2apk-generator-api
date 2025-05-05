@@ -61,6 +61,9 @@ Sebelum menjalankan server ini, pastikan kamu sudah menginstal:
    npm install
    ```
 
+   *Lakukan juga di dalam folder `app-template`*
+  
+
 ---
 
 ## 🔄 Cara Menggunakan
