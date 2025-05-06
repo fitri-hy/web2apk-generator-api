@@ -169,3 +169,22 @@ http://localhost:8800/download/{nama-file.apk}
 Folder sementara otomatis dihapus setelah proses build selesai atau jika terjadi error.
 
 ---
+
+## 📁 Struktur Folder
+
+```
+web2apk-generator-api/
+│
+├── app-template/
+├── config/
+├── middleware/
+├── node_modules/
+├── output/
+├── routes/
+├── temps/
+├── utils/
+├── gradle-8.14
+├── index.js
+├── package.json
+└── README.md
+```
