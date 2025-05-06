@@ -177,11 +177,11 @@ web2apk-generator-api/
 │
 ├── app-template/
 ├── config/
-├── middleware/
+├── controllers/
+├── middlewares/
 ├── node_modules/
 ├── output/
 ├── routes/
-├── temps/
 ├── utils/
 ├── gradle-8.14
 ├── index.js
