@@ -6,9 +6,11 @@ Sebuah server sederhana berbasis Express.js yang dapat menghasilkan file APK And
 
 ## 🚀 Fitur
 
-* Menghasilkan APK Android dari URL website dalam bentuk WebView.
-* Menerima request POST untuk membuat aplikasi secara dinamis.
-* Menggunakan Cordova untuk proses build APK.
+- Membuat APK Android dari URL website.
+- Upload logo PNG (via form-data) atau dari URL (via body JSON).
+- Link download APK langsung tersedia setelah build.
+- Build otomatis dengan Cordova + SDK Android + Gradle.
+- Bersih-bersih otomatis folder build sementara.
 
 ---
 
@@ -18,117 +20,152 @@ Sebelum menjalankan server ini, pastikan kamu sudah menginstal:
 
 * **Node.js v23.8.0+**
 * **NPM 11.3.0+**
+* **Android SDK 34+**
+* **Gradle 8.14+**
 * **Cordova** (global)
 
   ```bash
   npm install -g cordova
   ```
-* **Android SDK 34+** [Download](https://developer.android.com)
-* **Gradle 8.14** [Download](https://gradle.org/releases/)
-* Sudah mengatur environment variable `ANDROID_HOME` dan `PATH` dengan benar
 
 ---
 
-## 🛠️ Langkah Instalasi
-1. **Clone repositori ini**
+## 🛠️ Instalasi
 
+1. **Clone & masuk ke folder**
    ```bash
    git clone https://github.com/fitri-hy/web2apk-generator-api.git
    cd web2apk-generator-api
    ```
 
-2. **Unduh SDK Android**
-
-    Instal SDK
-
-3. **Unduh Gradle**
-
-    Extrack kedalam ROOT Project `web2apk-generator-api`
-
-
-4. **Atur path SDK Android dan Gradle**
-
-   Edit bagian berikut di dalam file `index.js`:
-
-   ```js
-   const ANDROID_SDK_PATH = 'C:\\Users\\NamaPengguna\\AppData\\Local\\Android\\Sdk';
-   const GRADLE_PATH = path.join(__dirname, 'gradle-8.14', 'bin');
-   ```
-
-5. **Install dependencies**
+2. **Install dependensi**
 
    ```bash
    npm install
    ```
+   > *Lakukan juga di dalam folder `app-template`*
 
-   *Lakukan juga di dalam folder `app-template`*
-  
+3. **Atur path SDK Android dan Gradle**
+
+   Buka folder `config/paths.js` dan bagian berikut:
+
+   ```js
+   ANDROID_SDK_PATH: 'C:\\Users\\Name-PC\\AppData\\Local\\Android\\Sdk',
+   GRADLE_PATH: path.join(__dirname, '../gradle-8.14/bin')
+   ```
+
+4. **Jalankan server**
+
+   ```bash
+   node index.js
+   ```
 
 ---
 
-## 🔄 Cara Menggunakan
+## 🧪 Pengujian API
 
-### Jalankan server
+### ✅ Metode 1: Form-Data (Upload File)
 
-```bash
-node index.js
-```
+Gunakan jika ingin mengunggah logo secara langsung.
 
-Server akan berjalan di:
+#### 🔸 Header
 
 ```
-http://localhost:8800
+Content-Type: multipart/form-data
 ```
 
-### Endpoint API
+#### 🔸 Form Fields
 
-#### `POST /generate`
+| Field    | Wajib    | Keterangan                 |
+| -------- | -------- | -------------------------- |
+| appName  | ✅        | Nama aplikasi Android      |
+| url      | ✅        | URL yang dimuat di WebView |
+| logoFile | opsional | File logo PNG (.png saja)  |
 
-Digunakan untuk membuat file APK dari sebuah URL website.
+#### 🧪 Contoh via Postman
 
-**Contoh Body Request:**
+* Method: `POST`
+* URL: `http://localhost:8800/generate`
+* Body > form-data:
 
-```json
-{
-  "appName": "AplikasiSaya",
-  "url": "https://example.com"
-}
-```
+  * `appName`: `ContohApp`
+  * `url`: `https://example.com`
+  * `logoFile`: (Upload file PNG)
 
-**Respons:**
+#### 📤 Respons
 
 ```json
 {
   "message": "APK generated",
-  "downloadUrl": "http://localhost:8800/download/AplikasiSaya-<id-unik>.apk"
+  "downloadUrl": "http://localhost:8800/download/ContohApp-abc123.apk"
 }
 ```
 
-### Unduh APK
-
-Gunakan `downloadUrl` dari respons untuk mengunduh APK yang sudah dibuat.
-
 ---
 
-## 📁 Struktur Folder
+### ✅ Metode 2: Body JSON (Pakai logo dari URL)
+
+Gunakan jika tidak ingin upload logo, cukup pakai URL PNG.
+
+#### 🔸 Header
 
 ```
-.
-├── app-template/      # Template proyek Cordova
-├── gradle-8.14/       # Folder Gradle
-├── output/            # Hasil file APK
-├── index.js           # Script utama server
-└── package.json
+Content-Type: application/json
+```
+
+#### 🔸 Body (raw JSON)
+
+```json
+{
+  "appName": "MyWebApp",
+  "url": "https://your-site.com",
+  "logoUrl": "https://your-site.com/images/logo.png"
+}
+```
+
+> Logo harus berformat PNG dan dapat diakses publik.
+
+#### 🧪 Contoh via curl
+
+```bash
+curl -X POST http://localhost:8800/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "appName": "MyWebApp",
+    "url": "https://your-site.com",
+    "logoUrl": "https://your-site.com/images/logo.png"
+}'
 ```
 
 ---
 
-## 📝 Catatan
+## ⚠️ Validasi & Error
 
-* Pastikan Android SDK sudah lengkap dengan build-tools dan platform-tools.
-* Disarankan menggunakan Cordova Android versi 12.x atau lebih baru.
-* Untuk Linux/macOS, ubah path dan separator sesuai sistem.
+* ❌ `400` jika `appName`/`url` tidak dikirim.
+* ❌ `400` jika file logo bukan PNG.
+* ❌ `500` jika gagal build APK.
+* ⚠️ Logo bisa di-skip, tapi hasil APK pakai ikon default.
 
 ---
 
-Dibuat dengan ❤️ oleh Fitri-HY
+## 📁 Output
+
+APK hasil build disimpan di folder:
+
+```
+/output
+```
+
+Bisa diunduh dari:
+
+```
+http://localhost:8800/download/{nama-file.apk}
+```
+
+---
+
+## 🧹 Otomatis Bersih-Bersih
+
+Folder sementara otomatis dihapus setelah proses build selesai atau jika terjadi error.
+
+---
